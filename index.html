@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical Assisting Patient Call Simulation #1</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #111111;
+    }
+
+    .page-wrap {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .simulation-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .simulation-table td {
+      border: 1px solid #7ea0ec;
+      vertical-align: middle;
+    }
+
+    .instruction-cell {
+      width: 22%;
+      min-width: 190px;
+      padding: 16px 14px;
+      background: #edf0f8;
+      text-align: left;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .content-cell {
+      width: 78%;
+      padding: 18px;
+      background: #dce3f4;
+      text-align: center;
+    }
+
+    .step-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+
+    .title-row td {
+      padding: 14px;
+      background: #ffffff;
+      text-align: center;
+      border-left: 1px solid #7ea0ec;
+      border-right: 1px solid #7ea0ec;
+      border-top: 1px solid #7ea0ec;
+      border-bottom: 1px solid #7ea0ec;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .record-box {
+      display: inline-block;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .record-button {
+      min-height: 44px;
+      padding: 10px 18px;
+      border: 1px solid #777777;
+      background: #ffffff;
+      color: #111111;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .record-button:disabled {
+      color: #aaaaaa;
+      border-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #recordStatus {
+      margin-top: 10px;
+      font-size: 13px;
+      font-style: italic;
+      color: #444444;
+    }
+
+    .agent-wrap {
+      width: 360px;
+      max-width: 100%;
+      height: 300px;
+      margin: 0 auto;
+      background: #ffffff;
+      overflow: visible;
+    }
+
+    #agentFrame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .database-frame {
+      width: 100%;
+      border: 1px solid #c9cfd8;
+      background: #ffffff;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .patient-frame {
+      height: 650px;
+    }
+
+    .schedule-frame {
+      height: 980px;
+    }
+
+    .fallback {
+      margin: 10px 0 0;
+      font-size: 13px;
+      color: #444444;
+    }
+
+    .fallback a {
+      color: #184557;
+    }
+
+    #downloadArea {
+      display: none;
+      margin-top: 18px;
+    }
+
+    #recordingPlayback {
+      width: 100%;
+      max-width: 500px;
+      margin: 10px auto;
+    }
+
+    #downloadRecording {
+      display: inline-block;
+      padding: 10px 16px;
+      border: 1px solid #777777;
+      background: #ffffff;
+      color: #111111;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .small-note {
+      margin: 0;
+      font-size: 12px;
+      color: #444444;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 800px) {
+      .simulation-table,
+      .simulation-table tbody,
+      .simulation-table tr,
+      .simulation-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .instruction-cell,
+      .content-cell {
+        width: 100%;
+      }
+
+      .instruction-cell {
+        text-align: center;
+      }
+
+      .patient-frame {
+        height: 760px;
+      }
+
+      .schedule-frame {
+        height: 1050px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrap">
+    <table class="simulation-table">
+      <tr class="title-row">
+        <td colspan="2">Medical Assisting Patient Call Simulation #1</td>
+      </tr>
+
+      <!-- STEP 1 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">STEP 1:</span>
+          Click “Start Recording” and click “Allow” on the pop up.
+        </td>
+
+        <td class="content-cell">
+          <div class="record-box">
+            <button id="startRecording" class="record-button" type="button">
+              ● Start Recording
+            </button>
+          </div>
+
+          <div id="recordStatus" role="status">
+            Recording not started
+          </div>
+        </td>
+      </tr>
+
+      <!-- STEP 2 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 2:</span>
+          Click “Start Call”
+        </td>
+
+        <td class="content-cell">
+          <div class="agent-wrap">
+            <iframe
+              id="agentFrame"
+              title="Medical assisting patient conversation"
+              allow="microphone; autoplay">
+            </iframe>
+          </div>
+        </td>
+      </tr>
+
+      <!-- STEP 3 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 3:</span>
+          Answer the patient's questions using the patient lookup database.
+        </td>
+
+        <td class="content-cell">
+          <iframe
+            class="database-frame patient-frame"
+            title="Medical Assisting Patient Database"
+            src="https://bakrogh2013.github.io/MedicalAssisitingPatientDatabase/"
+            loading="lazy"
+            allow="clipboard-read; clipboard-write">
+          </iframe>
+
+          <p class="fallback">
+            If the patient database does not display,
+            <a
+              href="https://bakrogh2013.github.io/MedicalAssisitingPatientDatabase/"
+              target="_blank"
+              rel="noopener noreferrer">
+              open the Medical Assisting Patient Database in a new tab
+            </a>.
+          </p>
+        </td>
+      </tr>
+
+      <!-- STEP 4 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 4:</span>
+          Use the scheduling database to give the patient possible appointment times/dates/locations.
+        </td>
+
+        <td class="content-cell">
+          <iframe
+            class="database-frame schedule-frame"
+            title="Medical Assisting Scheduling Database"
+            src="https://bakrogh2013.github.io/MedicalAssistingSchedulingDatabase/"
+            loading="lazy"
+            allow="clipboard-read; clipboard-write">
+          </iframe>
+
+          <p class="fallback">
+            If the scheduling database does not display,
+            <a
+              href="https://bakrogh2013.github.io/MedicalAssistingSchedulingDatabase/"
+              target="_blank"
+              rel="noopener noreferrer">
+              open the Medical Assisting Scheduling Database in a new tab
+            </a>.
+          </p>
+        </td>
+      </tr>
+
+      <!-- STEP 5 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 5:</span>
+          End the call by clicking the phone icon. End the call by clicking the phone icon in the Step 2 window.
+        </td>
+
+        <td class="content-cell">
+          Return to the patient call window in Step 2 and click the phone icon to end the conversation.
+        </td>
+      </tr>
+
+      <!-- STEP 6 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 6:</span>
+          Click “Stop Recording”
+        </td>
+
+        <td class="content-cell">
+          <div class="record-box">
+            <button id="stopRecording" class="record-button" type="button" disabled>
+              ■ Stop Recording
+            </button>
+          </div>
+
+          <div id="downloadArea">
+            <h3>Recording Complete</h3>
+
+            <audio id="recordingPlayback" controls></audio>
+
+            <br>
+
+            <a id="downloadRecording">
+              Download Recording
+            </a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- STEP 7 -->
+      <tr>
+        <td class="instruction-cell">
+          <span class="step-label">Step 7:</span>
+          Upload recording to Canvas for your teacher to grade.
+        </td>
+
+        <td class="content-cell">
+          <p class="small-note">
+            After downloading your recording, return to Canvas and upload the recording to the assignment.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    /*
+      ELEVENLABS MEDICAL ASSISTING PATIENT #1
+    */
+
+    const agentFrame = document.getElementById('agentFrame');
+
+    agentFrame.srcdoc = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <style>
+            html,
+            body {
+              margin: 0;
+              width: 100%;
+              height: 100%;
+              overflow: visible;
+              background: #ffffff;
+            }
+          </style>
+        </head>
+
+        <body>
+          <elevenlabs-convai
+            agent-id="agent_3501m7r07npsfd2vjz1emm5rvzms">
+          </elevenlabs-convai>
+
+          <script
+            src="https://unpkg.com/@elevenlabs/convai-widget-embed"
+            async
+            type="text/javascript">
+          <\/script>
+        </body>
+      </html>
+    `;
+
+
+    /*
+      RECORDING
+      Same recording flow as the pharmacy assignment:
+      capture shared tab audio first, then microphone,
+      mix both tracks, and record the mixed audio.
+    */
+
+    const startButton = document.getElementById('startRecording');
+    const stopButton = document.getElementById('stopRecording');
+    const status = document.getElementById('recordStatus');
+    const downloadArea = document.getElementById('downloadArea');
+
+    let recorder;
+    let microphoneStream;
+    let tabStream;
+    let audioContext;
+    let mixedDestination;
+    let chunks = [];
+    let recordingUrl = null;
+
+    startButton.addEventListener('click', async () => {
+      startButton.disabled = true;
+      stopButton.disabled = true;
+      downloadArea.style.display = 'none';
+
+      status.textContent =
+        'Choose This Tab and enable Share tab audio.';
+
+      try {
+        if (
+          !navigator.mediaDevices?.getDisplayMedia ||
+          !navigator.mediaDevices?.getUserMedia
+        ) {
+          throw new Error(
+            'This browser does not support the required recording permissions.'
+          );
+        }
+
+        /*
+          Request tab capture FIRST so the browser retains
+          the user activation needed for getDisplayMedia().
+        */
+        tabStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: true,
+          preferCurrentTab: true,
+          selfBrowserSurface: 'include',
+          surfaceSwitching: 'exclude'
+        });
+
+        if (!tabStream.getAudioTracks().length) {
+          throw new Error(
+            'No tab audio was shared. Select This Tab and enable Share tab audio, then retry.'
+          );
+        }
+
+        const videoTrack = tabStream.getVideoTracks()[0];
+        const settings = videoTrack?.getSettings?.() || {};
+
+        if (
+          settings.displaySurface &&
+          settings.displaySurface !== 'browser'
+        ) {
+          throw new Error(
+            'Please share This Tab, not a window or the entire screen.'
+          );
+        }
+
+        status.textContent =
+          'Tab audio connected. Allow microphone access…';
+
+        microphoneStream =
+          await navigator.mediaDevices.getUserMedia({
+            audio: true
+          });
+
+        audioContext = new AudioContext();
+        await audioContext.resume();
+
+        mixedDestination =
+          audioContext.createMediaStreamDestination();
+
+        audioContext
+          .createMediaStreamSource(microphoneStream)
+          .connect(mixedDestination);
+
+        audioContext
+          .createMediaStreamSource(tabStream)
+          .connect(mixedDestination);
+
+        const mimeType = [
+          'audio/webm;codecs=opus',
+          'audio/webm',
+          'audio/mp4'
+        ].find(type => MediaRecorder.isTypeSupported(type));
+
+        recorder = new MediaRecorder(
+          mixedDestination.stream,
+          mimeType ? { mimeType } : {}
+        );
+
+        chunks = [];
+
+        recorder.ondataavailable = event => {
+          if (event.data && event.data.size) {
+            chunks.push(event.data);
+          }
+        };
+
+        recorder.onstop = () => {
+          const type =
+            recorder.mimeType || 'audio/webm';
+
+          const extension =
+            type.includes('mp4') ? 'm4a' : 'webm';
+
+          const blob =
+            new Blob(chunks, { type });
+
+          if (recordingUrl) {
+            URL.revokeObjectURL(recordingUrl);
+          }
+
+          recordingUrl =
+            URL.createObjectURL(blob);
+
+          document.getElementById('recordingPlayback').src =
+            recordingUrl;
+
+          const downloadLink =
+            document.getElementById('downloadRecording');
+
+          downloadLink.href =
+            recordingUrl;
+
+          downloadLink.download =
+            `Medical-Assisting-Patient-Call-Simulation-1.${extension}`;
+
+          downloadArea.style.display =
+            'block';
+
+          status.textContent =
+            'Recording stopped';
+
+          cleanup();
+
+          startButton.disabled =
+            false;
+        };
+
+        videoTrack?.addEventListener('ended', () => {
+          if (
+            recorder?.state === 'recording'
+          ) {
+            stopButton.click();
+          }
+        });
+
+        recorder.start(1000);
+
+        status.textContent =
+          '● Recording microphone and shared tab audio';
+
+        stopButton.disabled =
+          false;
+
+      } catch (error) {
+        console.error(error);
+
+        status.textContent =
+          error.message ||
+          'Recording not started. Please retry.';
+
+        cleanup();
+
+        startButton.disabled =
+          false;
+      }
+    });
+
+    stopButton.addEventListener('click', () => {
+      stopButton.disabled = true;
+
+      if (
+        recorder &&
+        recorder.state !== 'inactive'
+      ) {
+        recorder.stop();
+      }
+    });
+
+    function cleanup() {
+      microphoneStream
+        ?.getTracks()
+        .forEach(track => track.stop());
+
+      tabStream
+        ?.getTracks()
+        .forEach(track => track.stop());
+
+      mixedDestination
+        ?.stream
+        .getTracks()
+        .forEach(track => track.stop());
+
+      if (
+        audioContext &&
+        audioContext.state !== 'closed'
+      ) {
+        audioContext.close();
+      }
+    }
+  </script>
+</body>
+</html>
